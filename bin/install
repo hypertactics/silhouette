@@ -1,0 +1,96 @@
+#!/usr/bin/env bash
+
+SILHOUETTE_PATH="${HOME}/.silhouette"
+
+# initialize_ansi originally sourced from 
+# wicked cool bash scripts
+# https://intuitive.com/wicked/scripts/011-colors.txt
+# notes for usage: echo -e or printf %b
+initialize_ansi() {
+  esc="\033"
+
+  blackf="${esc}[30m";   redf="${esc}[31m";    greenf="${esc}[32m"
+  yellowf="${esc}[33m"   bluef="${esc}[34m";   purplef="${esc}[35m"
+  cyanf="${esc}[36m";    whitef="${esc}[37m"
+  
+  blackb="${esc}[40m";   redb="${esc}[41m";    greenb="${esc}[42m"
+  yellowb="${esc}[43m"   blueb="${esc}[44m";   purpleb="${esc}[45m"
+  cyanb="${esc}[46m";    whiteb="${esc}[47m"
+
+  boldon="${esc}[1m";    boldoff="${esc}[22m"
+  italicson="${esc}[3m"; italicsoff="${esc}[23m"
+  ulon="${esc}[4m";      uloff="${esc}[24m"
+  invon="${esc}[7m";     invoff="${esc}[27m"
+
+  reset="${esc}[0m"
+}
+
+install_homebrew() {
+  homebrew=$(which brew)
+  if [[ ! -f '/usr/local/bin/brew' && -z "${homebrew}" ]]; then
+    /usr/bin/ruby -e "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install)"
+  fi
+}
+
+brew_install() {
+  local pkg="${1}"
+  pkg_in_path=$(which $pkg)
+  if [ -z ${pkg_in_path} ]; then
+    ok "Installing ${pkg}"
+    run_command "brew install ${pkg}"
+  else
+    echo "${pkg} found in path, skipping brew installation"
+  fi
+}
+
+install_dependencies() {
+  if [ ! -d "${SILHOUETTE_PATH}" ]; then
+    notice "Installing dependencies"
+    brew_install 'git'
+    brew_install 'ansible'
+    brew_install 'dialog'
+  fi
+}
+
+run_command() {
+  command="${1}"
+  $command
+  if [ $? -ne 0 ]; then
+    warn "Something went wrong while running the following command"
+    notice "${1}"
+    error "Unable to install silhouette without dependencies. exiting!"
+    exit 2
+  fi
+}
+
+clone_silhouette() {
+  if [ ! -d "${SILHOUETTE_PATH}" ]; then
+    notice "Installing silhouette"
+    git clone https://github.com/hypertactics/silhouette.git $HOME/.silhouette
+  else
+    error "silhouette appears to be installed already. exiting!"
+    exit 2
+  fi
+}
+
+ok() {
+  printf "${greenf}%b${reset}\n" "${1}"
+}
+
+error() {
+  printf "${redf}%b${reset}\n" "${1}"
+}
+
+warn() {
+  printf "${yellowf}%b${reset}\n" "${1}"
+}
+
+notice() {
+  printf "${cyanf}%b${reset}\n" "${1}"
+}
+
+initialize_ansi
+install_homebrew
+install_dependencies
+clone_silhouette
+
