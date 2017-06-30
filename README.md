@@ -7,5 +7,5 @@ A profile manager for your *nix shells.
 ## Installation
 
 ```bash
-curl -fsSl https://raw.githubusercontent.com/hypertactics/silhouette/master/bin/install
+bash <(curl -fsSl https://raw.githubusercontent.com/hypertactics/silhouette/master/bin/install)
 ```
